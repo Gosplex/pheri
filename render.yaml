@@ -1,31 +1,41 @@
-# Render Blueprint: New -> Blueprint -> connect this repo.
+# PHERI on Render: ONE service serves the full game (website + admin) AND multiplayer.
+# Render -> New -> Blueprint -> pick this repo.
 services:
   - type: web
-    name: pheri-server
+    name: pheri                # your address becomes https://pheri.onrender.com (if the name is free)
     runtime: node
     region: singapore          # closest Render region to India
-    plan: starter              # "free" works too, but sleeps after ~15 min idle
-    buildCommand: npm run render-build
-    startCommand: npm start
+    plan: starter              # always awake (about $7/month). Use "free" to test; it sleeps after ~15 min idle
+    autoDeploy: true           # redeploys on every git push
+    buildCommand: npm run render-build   # installs dev tools + builds the game (dist/)
+    startCommand: npm start              # node server/index.js
     healthCheckPath: /health
     envVars:
+      # ---- runtime ----
       - key: NODE_VERSION
-        value: 22
-      - key: SERVE_STATIC      # true = this server also serves the game (single-service setup)
+        value: "22"
+      - key: SERVE_STATIC                # this server also serves the game website
         value: "true"
-      - key: ALLOWED_ORIGINS   # your Vercel URL(s), comma separated, or * while testing
+      - key: ALLOWED_ORIGINS             # after first deploy, change to https://pheri.onrender.com
         value: "*"
+      - key: ADMIN_KEY                   # auto-generated; shown in Render -> Environment
+        generateValue: true
+
+      # ---- Supabase (server side, secret) ----
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: ADMIN_KEY
-        generateValue: true
-      - key: AGORA_APP_ID          # live voice & video (optional)
-        sync: false
-      - key: AGORA_APP_CERTIFICATE # secret: used only to create tokens
-        sync: false
+
+      # ---- Supabase (built into the game, public) ----
       - key: VITE_SUPABASE_URL
         sync: false
       - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      # VITE_SERVER_URL is intentionally NOT set: the game connects to its own address.
+
+      # ---- Agora live voice & video (secret certificate) ----
+      - key: AGORA_APP_ID
+        sync: false
+      - key: AGORA_APP_CERTIFICATE
         sync: false
