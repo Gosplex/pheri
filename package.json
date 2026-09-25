@@ -1,0 +1,41 @@
+{
+  "name": "pheri",
+  "private": true,
+  "version": "2.3.0",
+  "description": "PHERI: third-person Indian motorcycle delivery game with live online races. Vite + Three.js client (Vercel), Node WebSocket server (Render), Supabase backend.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:single": "vite build --mode single",
+    "preview": "vite preview",
+    "smoke": "node tools/smoke.mjs",
+    "start": "node server/index.js",
+    "server": "node server/index.js",
+    "dev:server": "PORT=8080 SERVE_STATIC=false node server/index.js",
+    "export:pois": "node tools/export-pois.mjs",
+    "render-build": "npm install --include=dev && npm run build",
+    "supabase:setup": "node --env-file=.env supabase.js setup",
+    "supabase:admin": "node --env-file=.env supabase.js admin",
+    "supabase:check": "node --env-file=.env supabase.js check",
+    "supabase:env": "node --env-file=.env supabase.js env"
+  },
+  "dependencies": {
+    "@fontsource/baloo-bhai-2": "^5.3.0",
+    "@fontsource/noto-sans-devanagari": "^5.3.0",
+    "@fontsource/rajdhani": "^5.3.0",
+    "@supabase/supabase-js": "^2.117.2",
+    "@vercel/analytics": "^2.0.1",
+    "agora-rtc-sdk-ng": "^4.24.8",
+    "agora-token": "^2.0.6",
+    "three": "^0.186.1",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1",
+    "vite-plugin-singlefile": "^2.3.3"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

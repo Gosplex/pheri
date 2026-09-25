@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>PHERI · ફેરી · Ride. Deliver. Race.</title>
+  <meta name="description" content="PHERI: ride, deliver and race friends online in a Rajkot-inspired Indian city." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2A5A'/%3E%3Ccircle cx='20' cy='42' r='9' fill='none' stroke='%23F4B400' stroke-width='5'/%3E%3Ccircle cx='46' cy='42' r='9' fill='none' stroke='%23F4B400' stroke-width='5'/%3E%3Cpath d='M20 42 L30 26 H40 L46 42' fill='none' stroke='%23F3EDE2' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Loading -->
+  <section id="loading" class="screen">
+    <div class="load-inner">
+      <div class="title-gu">ફેરી</div>
+      <div class="load-bar"><span id="load-fill"></span></div>
+      <p id="load-msg">Starting up</p>
+      <p id="load-tip" class="load-tip"></p>
+    </div>
+  </section>
+
+  <!-- Main menu -->
+  <section id="menu" class="screen hidden">
+    <div class="menu-ver" id="menu-ver"></div>
+    <div class="ajrakh-strip" aria-hidden="true"></div>
+    <div class="menu-col">
+      <div class="title-gu">ફેરી</div>
+      <h1 class="title-en">PHERI</h1>
+      <p class="tagline">Ride. Deliver. Race.</p>
+      <div id="menu-profile" class="menu-profile"></div>
+      <nav class="menu-actions" id="menu-actions">
+        <button data-act="continue" id="btn-continue">Continue ride</button>
+        <button data-act="new">Start new ride</button>
+        <button data-act="online">Play online</button>
+        <button data-act="settings">Settings</button>
+        <button data-act="controls">Controls</button>
+      </nav>
+      <p class="menu-foot">You start at the Marwadi University parking, 7:30 in the morning. Pick up jobs on the Pheri app, learn the city one street at a time, and race friends online.</p>
+      <p class="menu-keys"><kbd>↑</kbd><kbd>↓</kbd> choose · <kbd>Enter</kbd> select</p>
+    </div>
+  </section>
+
+  <!-- HUD -->
+  <section id="hud" class="hidden">
+    <div id="job-card" class="panel hidden">
+      <div class="job-top"><span id="job-type" class="chip">Food</span><span id="job-timer">3:20</span></div>
+      <div id="job-steps" class="job-steps"><span data-s="pickup">Pick up</span><i></i><span data-s="drop">Deliver</span></div>
+      <div id="job-title">Fafda-jalebi with kadhi</div>
+      <div id="job-route"><span id="job-stage">Pick up at</span> <strong id="job-place">Jalaram Sweets</strong></div>
+      <div class="job-bottom"><span id="job-dist">420 m</span><span id="job-pay">₹68</span></div>
+      <div id="job-extra"></div>
+      <div id="job-hold"><span></span></div>
+    </div>
+
+    <div id="status" class="panel">
+      <div class="clock"><span id="clock-time">7:30 AM</span><span id="clock-phase">Morning</span></div>
+      <div class="status-row"><span id="weather-icon" title="Weather"></span><span id="money">₹250</span><span id="money-pop"></span><span id="rating">★ 3.80</span></div>
+    </div>
+
+    <div id="mp-hud" class="panel hidden"><div class="mp-top"><span>Time left</span><b id="mp-timer">5:00</b></div><div id="mp-board"></div></div>
+    <div id="mp-count" class="hidden">3</div>
+    <div id="fx-speed"></div><div id="fx-lens"></div>
+    <div id="toasts"></div>
+    <div id="net-chip" class="hidden"></div>
+    <div id="hint-strip" class="hidden"><span><kbd>W</kbd> ride</span><span><kbd>A</kbd><kbd>D</kbd> steer</span><span><kbd>Space</kbd> brake slide</span><span><kbd>P</kbd> phone</span><span><kbd>M</kbd> map</span><span><kbd>H</kbd> horn</span><span><kbd>C</kbd> camera</span><span><kbd>Esc</kbd> pause</span></div>
+    <div id="prompt" class="hidden"><kbd>E</kbd><span id="prompt-text">Refuel</span></div>
+    <div id="speech" class="hidden"></div>
+
+    <div id="minimap-wrap"><canvas id="minimap" width="220" height="220"></canvas><div id="compass-n">N</div><div id="zone-name">Marwadi University</div></div>
+
+    <div id="speedo" class="panel">
+      <svg id="rpm" viewBox="0 0 200 110" aria-hidden="true"></svg>
+      <div class="speed-row"><span id="speed">0</span><span class="unit">km/h</span><span id="gear" class="chip">N</span></div>
+      <div class="bars">
+        <div class="bar-line"><svg viewBox="0 0 24 24" class="ico"><path d="M5 3h9v18H5zM14 8h2l2 2v8a1.5 1.5 0 0 0 3 0V9l-3-3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="5" width="5" height="5" fill="currentColor"/></svg><div class="bar"><span id="fuel-fill"></span></div></div>
+        <div class="bar-line"><svg viewBox="0 0 24 24" class="ico"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="currentColor"/></svg><div class="bar thin"><span id="boost-fill"></span></div></div>
+        <div class="speedo-foot"><span id="fuel-pct">85%</span><span id="bike-name">Sparrow 110</span></div>
+      </div>
+    </div>
+
+    <div id="fps" class="hidden"></div>
+    <div id="touch" class="hidden">
+      <div class="t-left"><button data-t="left">◀</button><button data-t="right">▶</button></div>
+      <div class="t-right"><button data-t="pause">II</button><button data-t="horn">Horn</button><button data-t="interact">E</button><button data-t="phone">📱</button><button data-t="brake" class="big">Brake</button><button data-t="throttle" class="big gas">Go</button></div>
+    </div>
+  </section>
+
+  <!-- Pheri phone -->
+  <section id="phone" class="hidden">
+    <div class="phone-shell">
+      <header class="phone-head"><span class="brand">Pheri <span class="brand-gu">ફેરી</span></span><span class="phone-meta"><span id="phone-money">₹0</span><span id="phone-time">7:30</span></span></header>
+      <nav class="phone-tabs"><button data-tab="jobs" class="on">Jobs</button><button data-tab="garage">Garage</button><button data-tab="profile">Me</button><button data-tab="radio">Radio</button><button data-tab="stats">Stats</button></nav>
+      <div class="phone-body" id="phone-body"></div>
+      <footer class="phone-foot">Press <kbd>P</kbd> to close</footer>
+    </div>
+  </section>
+
+  <!-- Live chat, voice and video (multiplayer) -->
+  <section id="chat" class="panel hidden">
+    <header class="chat-head"><b>Chat</b><span id="chat-badge"></span><button id="chat-team" class="hidden">All</button><button id="chat-toggle" aria-label="Collapse chat">–</button></header>
+    <div id="chat-log" aria-live="polite"></div>
+    <div id="chat-quick"></div>
+    <form id="chat-form" autocomplete="off"><input id="chat-input" maxlength="140" placeholder="Press Enter to chat"><button class="btn">Send</button></form>
+  </section>
+  <section id="media-bar" class="panel hidden"></section>
+  <section id="rtc-tiles"></section>
+
+  <!-- Online lobby: live side panel -->
+  <section id="lobby" class="panel hidden"><div id="lobby-body"></div></section>
+
+  <!-- Photo mode -->
+  <section id="photo" class="hidden">
+    <div class="photo-bar panel">
+      <strong>Photo mode</strong><span>Drag to orbit · scroll to zoom</span>
+      <button class="btn" id="ph-shot">Take photo</button><button class="btn ghost" id="ph-filter">Filter: None</button><button class="btn ghost" id="ph-cap">Caption: On</button><button class="btn ghost" id="ph-share">Share to gallery</button><button class="btn ghost" id="ph-exit">Exit</button>
+    </div>
+  </section>
+
+  <!-- Full map -->
+  <section id="bigmap" class="hidden">
+    <canvas id="bigmap-canvas"></canvas>
+    <div class="map-legend panel">
+      <strong>Rajkot (compressed map)</strong>
+      <span><i class="dot d-you"></i>You</span><span><i class="dot d-job"></i>Job</span><span><i class="dot d-fuel"></i>Fuel</span>
+      <em>Scroll to zoom, drag to pan, <kbd>M</kbd> to close</em>
+    </div>
+  </section>
+
+  <!-- Pause / settings / controls / summary share a modal -->
+  <section id="modal" class="screen hidden"><div class="modal-card" id="modal-card"></div></section>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

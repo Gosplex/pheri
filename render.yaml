@@ -1,0 +1,31 @@
+# Render Blueprint: New -> Blueprint -> connect this repo.
+services:
+  - type: web
+    name: pheri-server
+    runtime: node
+    region: singapore          # closest Render region to India
+    plan: starter              # "free" works too, but sleeps after ~15 min idle
+    buildCommand: npm run render-build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: SERVE_STATIC      # true = this server also serves the game (single-service setup)
+        value: "true"
+      - key: ALLOWED_ORIGINS   # your Vercel URL(s), comma separated, or * while testing
+        value: "*"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: AGORA_APP_ID          # live voice & video (optional)
+        sync: false
+      - key: AGORA_APP_CERTIFICATE # secret: used only to create tokens
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false

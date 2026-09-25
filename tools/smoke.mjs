@@ -1,0 +1,32 @@
+import './stub.mjs';
+import * as THREE from 'three';
+import { buildWorld } from '../src/world/world.js';
+import { Environment } from '../src/world/environment.js';
+import { Traffic } from '../src/entities/traffic.js';
+import { Pedestrians } from '../src/entities/pedestrians.js';
+import { Bike } from '../src/entities/bike.js';
+import { newProfile } from '../src/core/save.js';
+const scene = new THREE.Scene();
+const t0 = Date.now();
+const world = await buildWorld(scene, (p, m) => {});
+console.log('world built ms', Date.now() - t0, 'meshes', world.meshCount, 'pois', world.pois.length, 'colliders', world.collision.count);
+let verts = 0; scene.traverse((o) => { if (o.isMesh && o.geometry?.attributes.position) verts += o.geometry.attributes.position.count * (o.isInstancedMesh ? o.count : 1); });
+console.log('approx verts', verts);
+const renderer = { toneMappingExposure: 1 };
+const env = new Environment(scene, renderer, 'medium'); env.setWeatherMode('dynamic');
+const traffic = new Traffic(scene, world, world.mats, null, 'medium');
+const peds = new Pedestrians(scene, world, 'medium');
+const bike = new Bike(scene, world.mats, newProfile());
+const sp = world.campus.spawn; bike.place(sp.x, sp.z, sp.heading);
+const input = { axes: { throttle: 1, brake: 0, steer: 0 }, isDown: () => false, wasPressed: () => false };
+for (let i = 0; i < 1200; i++) {
+  const dt = 1 / 60;
+  input.axes.steer = Math.sin(i / 90) * 0.5;
+  env.update(dt, 1 / 60, bike.pos);
+  bike.update(dt, input, world, env, (c, r) => traffic.collidePlayer(c, r) || peds.collidePlayer(c, r));
+  traffic.update(dt, bike, { yaw: bike.heading }, env.time, env.state.night);
+  peds.update(dt, bike, env.time, traffic);
+  world.update(dt, env, i / 60);
+}
+console.log('bike', bike.pos.x.toFixed(1), bike.pos.z.toFixed(1), 'kmh', bike.kmh.toFixed(1), 'fuel', bike.fuel.toFixed(2), 'veh', traffic.vehicles.length, 'peds', peds.peds.length);
+const zones = {}; for (const p of world.pois) zones[p.kind] = (zones[p.kind] || 0) + 1; console.log(zones);
